@@ -116,7 +116,7 @@ def VPTSaE():
             webbrowser.open(url)   
             # Shows confirmation message
             print('Searching for "'+ text +'"\n')
-        if OPERATION == 0:
+        if OPERATION == 2:
             # Just print the result
             print(text)
 
