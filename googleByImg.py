@@ -6,7 +6,7 @@ PYTESSERACT_PATH = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 '''
     If you want to change the language of recognition change it at
-    line X 
+    line 108 
     por for Portuguese Language
     eng for English Language
 '''
