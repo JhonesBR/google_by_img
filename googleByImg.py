@@ -73,6 +73,7 @@ def getStartZone():
     global startCord
     global endCord
     startCord = pyautogui.position()
+    print("Top-left:", "X="+str(startCord[0])+", Y="+str(startCord[1]))
 
 
 # Function to get the second coordinates (Botton Right) and execute 
@@ -80,6 +81,7 @@ def getEndZone():
     global startCord
     global endCord
     endCord = pyautogui.position()
+    print("Botton-right:", "X="+str(endCord[0])+", Y="+str(endCord[1]))
     
 
 # Verify Possibility, Take Screenshot and Execute
@@ -88,6 +90,7 @@ def VPTSaE():
     global endCord
     global MAX_WORDS
     global OPERATION
+    global pressed_vks
 
     start, end = startCord, endCord
 
@@ -104,42 +107,40 @@ def VPTSaE():
         # Analyze text of image using tesseract
         text = pytesseract.image_to_string(img, lang="por")
 
-        # Get stop index using the MAX_WORDS defined on top of the program
-        stopIndex = getStopIndex(text)
-
-        # Cut text where the stop index point
-        if stopIndex != 0:
-            text = text[:stopIndex]
+        # Cut the text based on MAX_WORDS defined on top of the program
+        text = getXWords(text, MAX_WORDS)
 
         if OPERATION == 1:
             # Search at google for results
             url = "https://www.google.com.tr/search?q={}".format(text)
-            webbrowser.open(url)    
+            webbrowser.open(url)   
+            # Shows confirmation message
+            print('Searching for "'+ text +'"\n')
         if OPERATION == 0:
             # Just print the result
             print(text)
 
         # Redefine coordinates to empty
         startCord, endCord = (), ()
+    else:
+        # "Error" message
+        print("Coordinates non defined")
+    
+    # Remove pressed keys to fix buffer issue
+    toRemove = []
+    for vk in pressed_vks:
+        toRemove.append(vk)
+    for vk in toRemove:
+        pressed_vks.remove(vk)
 
 
-# Function to get the stop index based on MAX_WORD
-def getStopIndex(text):
-    spaces, empty = [], 1
-    for i in range(0, len(text)):
-        if text[i] == ' ':
-            spaces.append(i)
-        else:
-            empty = 0
-
-    if empty == 0:
-        if len(spaces) < MAX_WORDS:
-            stopindex = spaces[-1]
-        else:
-            stopIndex = spaces[MAX_WORDS-1]
-
-    else: return 0
-    return stopIndex
+# Function to cut text based on MAX_WORD
+def getXWords(text, MAX_WORDS):
+    s = text.split()
+    if len(s) <= MAX_WORDS:
+        return " ".join(s)
+    else:
+        return " ".join(s[:MAX_WORDS])
 
 
 # Function to improve the readability of the image for tesseract
@@ -177,8 +178,11 @@ def on_press(key):
 # Executed on any key release
 def on_release(key):
     vk = get_vk(key)
-    pressed_vks.remove(vk)
+    if vk in pressed_vks:
+        pressed_vks.remove(vk)
 
 
+# Shows message and start the listener for keys
+print("Program in operation\n")
 with Listener(on_press=on_press, on_release=on_release) as listener:
     listener.join()
