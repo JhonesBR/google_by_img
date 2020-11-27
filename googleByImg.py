@@ -155,7 +155,7 @@ def improveImage(img, BOOK):
     opencvImage = cv2.cvtColor(np.array(contrast), cv2.COLOR_RGB2BGR)
     gray = cv2.cvtColor(opencvImage, cv2.COLOR_BGR2GRAY)
     if BOOK == 1:
-        adaptive_threshold = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 85, 30)
+        adaptive_threshold = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 85, 11)
         adaptive_threshold = adjust_gamma(adaptive_threshold, 0.5)
         im_pil = Image.fromarray(adaptive_threshold)
     else:
