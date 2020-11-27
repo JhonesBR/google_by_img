@@ -17,6 +17,10 @@ OPERATION = 1
     2 for scan and print
 '''
 
+BOOK = 1
+'''
+    Change to 1 to scan book/photo images
+'''
 
 
 '''##########################################################################################################'''
@@ -42,10 +46,10 @@ except ImportError:
 
 # Numpy library
 try:
-    import numpy
+    import numpy as np
 except ImportError:
     os.system('python -m pip install numpy')
-    import numpy
+    import numpy as np
 
 # Keyboard library
 try:
@@ -91,6 +95,7 @@ def VPTSaE():
     global MAX_WORDS
     global OPERATION
     global pressed_vks
+    global BOOK
 
     start, end = startCord, endCord
 
@@ -100,13 +105,17 @@ def VPTSaE():
         width = end[0] - start[0]
         height = end[1] - start[1]
         img = pyautogui.screenshot(region=(start[0], start[1], width, height))
-        
+    
         # Improve the image for better readability
-        img = improveImage(img)
+        img = improveImage(img, BOOK)
 
         # Analyze text of image using tesseract
         text = pytesseract.image_to_string(img, lang="por")
 
+        if OPERATION == 2:
+            # Just print the result
+            print(text)
+        
         # Cut the text based on MAX_WORDS defined on top of the program
         text = getXWords(text, MAX_WORDS)
 
@@ -116,9 +125,6 @@ def VPTSaE():
             webbrowser.open(url)   
             # Shows confirmation message
             print('Searching for "'+ text +'"\n')
-        if OPERATION == 2:
-            # Just print the result
-            print(text)
 
         # Redefine coordinates to empty
         startCord, endCord = (), ()
@@ -144,9 +150,18 @@ def getXWords(text, MAX_WORDS):
 
 
 # Function to improve the readability of the image for tesseract
-def improveImage(img):
-    grey = ImageOps.grayscale(img)
-    return grey
+def improveImage(img, BOOK):
+    contrast = ImageOps.autocontrast(img)
+    opencvImage = cv2.cvtColor(np.array(contrast), cv2.COLOR_RGB2BGR)
+    gray = cv2.cvtColor(opencvImage, cv2.COLOR_BGR2GRAY)
+    if BOOK == 1:
+        adaptive_threshold = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 85, 30)
+        adaptive_threshold = adjust_gamma(adaptive_threshold, 0.5)
+        im_pil = Image.fromarray(adaptive_threshold)
+    else:
+        im_pil = Image.fromarray(gray)
+
+    return im_pil
 
 
 # Shortcuts linked to specific functions
@@ -155,6 +170,13 @@ shortcutList = {
     frozenset([Key.shift, KeyCode(vk=66)]): getEndZone,    # shift + b (Get end coordinates)
     frozenset([Key.shift, KeyCode(vk=67)]): VPTSaE,        # shift + c (Try to take screenshot and execute)
 }
+
+def adjust_gamma(image, gamma=1.0):
+   invGamma = 1.0 / gamma
+   table = np.array([((i / 255.0) ** invGamma) * 255
+      for i in np.arange(0, 256)]).astype("uint8")
+
+   return cv2.LUT(image, table)
 
 # List of keys pressed to be compared
 pressed_vks = set()
