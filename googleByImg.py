@@ -64,7 +64,11 @@ try:
 except ImportError:
     os.system('python -m pip install opencv-python')
 
-import pytesseract
+# PyTesseract library
+try:
+    import pytesseract
+except ImportError:
+    os.system('python -m pip install pytesseract')
 
 
 pytesseract.pytesseract.tesseract_cmd = PYTESSERACT_PATH
